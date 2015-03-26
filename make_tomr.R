@@ -1,0 +1,16 @@
+library(devtools)
+#devtools::create("O:/Tom/R/tomr")
+setwd("O:/Tom/R/tomr")
+
+# devtools::use_package('RODBC', 'Imports')
+# devtools::use_package('plyr', 'Imports')
+# devtools::use_package('arm', 'Imports')
+# devtools::use_package('mgcv', 'Imports')
+ devtools::use_package('rms', 'Imports')
+ devtools::use_package('survival', 'Imports')
+ devtools::use_package('plyr', 'Imports')
+ 
+devtools::load_all()
+
+devtools::install("O:/Tom/R/tomr")
+library(tomr)
