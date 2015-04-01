@@ -9,6 +9,10 @@ require(plyr)
   # string <- gsub("&nbsp;", "", string)
 # }
 
+save_object <- function(x, file_location){
+	filename = paste0(save_loc, deparse(substitute(x)), '.rdata')
+	saveRDS(x, filename)
+	}
 
 FactorCountIndex <- function(fac, n){
 	#returns a logical vector showing where the count of the levls in fac is greater then n
@@ -95,7 +99,7 @@ html_to_txt <- function(string, encoding = 'UTF-8') {
 
 html_to_text_2 = function(x) {
 	require(rvest)
-	x_html = try(rvest::html(x))
+	x_html = try(rvest::html(x), silent = TRUE)
 	if("try-error" %in% class(x_html)) return(x)
 	x_txt = rvest::html_text(x_html, encoding = 'UTF-8')
 	x <- gsub(intToUtf8(160), ' ', x)
