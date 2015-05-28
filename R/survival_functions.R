@@ -316,8 +316,9 @@ survplot3 <- function(fit, col = 1:surv_groups + 1, col.fill = makeTransparent(1
 		lty = lty, lwd = lwd,levels.only=levels.only, label.curves= label.curves, 
 		ylab = ylab, xlab = xlab,...)
 	#axis(1, at = 0:4 * 365 / 2, labels = c(0, 0.5, 1, 1.5, 2), pos = 0)
+	#max_x = xlim[2] / time.inc
 	
-	axis(1, at = 0:10 * 365 , labels = 0:10 , pos = 0)
+	axis(1, at = 0:floor(max(xlim) / time.inc) * time.inc , labels = 0:floor(max(xlim) / time.inc) , pos = 0)
 	
 	if(plot_survival) axis(2, at = 0:10 * 0.1, labels = 0:10 * 10)
 	else axis(2, at = 0:10 * 0.1, labels = 10:0 * 10)
