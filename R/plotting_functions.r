@@ -14,6 +14,7 @@ freqPlot <- function(fmla, data, na.action = NULL, labs = NULL, sort_tab = TRUE,
 	if(is.null(labs)) labs = colnames(mf)
 	fac_list <- llply(mf, function(.x) {
 		c(plotFactor(.x, sort_tab = !is.ordered(.x), silent = TRUE), ' ' = NA)
+		c(plotFactor(.x, sort_tab = !is.ordered(.x), silent = TRUE), ' ' = NA)
 		})
 	names(fac_list) <- NULL
 	#testFun <- function() c(x, NA)

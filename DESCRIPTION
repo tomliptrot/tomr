@@ -9,4 +9,5 @@ LazyData: true
 Imports: RODBC,
     plyr,
     arm,
-    mgcv
+    mgcv,
+    data.table

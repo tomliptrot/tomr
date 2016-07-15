@@ -1,5 +1,6 @@
 make_survival_object <- function(start_date, end_date, status, census_date = NULL){
 	require(survival)
+	# normally 0=alive, 1=dead. Other choices are TRUE/FALSE (TRUE = death) 
 	x = data.frame(start_date, end_date, status)
 	x$start_date <- as.Date(x$start_date )
 	x$end_date <- as.Date(x$end_date )

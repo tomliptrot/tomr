@@ -9,15 +9,130 @@ require(plyr)
   # string <- gsub("&nbsp;", "", string)
 # }
 
-save_object <- function(x, file_location){
-	filename = paste0(save_loc, deparse(substitute(x)), '.rdata')
+load_all_packages = function( pattern = "*.r", ...){
+  all_scripts =  dir(..., pattern = pattern)
+  
+  checkScriptDependencies <- function(fname){
+    rawCode  <- readLines(fname)
+    grep('require\\(|library\\(', rawCode, value = TRUE )
+  }
+  
+  listDeps <- list()
+  for(script in all_scripts){
+    listDeps[[script]] <- checkScriptDependencies(script)
+  }
+  
+  deps = unlist(listDeps )
+  eval(parse(text = deps), envir = .GlobalEnv)
+  return(deps)
+}
+
+replace_with = function(x, old, new) {
+	x[x == old] = new
+	x
+}
+
+
+t_dt <- function(x, key = TRUE){ 
+  #creates a 1-d frequency table for x
+  library(data.table)
+  dt <- data.table(x)
+  if(key) setkey(dt,x)	
+  tab <- dt[, list(freq = .N), by = x] 
+  out <- tab$freq
+  names(out) <- tab$x
+  out 
+}
+
+st = function(x){
+    if(require('data.table')) tab = tomr::t_dt(x)
+    else tab = table(x, useNA = 'ifany')
+    sort(tab, decreasing = TRUE)
+    }
+
+clean_names2 = function(n){
+    n <- tolower(n)
+    n <- gsub("\\.{2,}", ".", n)
+    n <- gsub("^\\Qx.\\E", "", n)
+    n <- gsub("\\.", "_", n)
+    n <- gsub("/", "", n)
+    n <- gsub(" ", "_", n)
+    n <- gsub("\\(", "", n)
+    n <- gsub("\\)", "", n)
+    n <- gsub("_$", "", n)
+    n <- gsub("\\?", "", n)
+    n <- gsub("__", "_", n)
+    n <- gsub("-", "_", n)
+   
+    n
+    }
+    
+# improved list of objects
+.ls.objects <- function (pos = 1, pattern, order.by,
+                        decreasing=FALSE, head=FALSE, n=5) {
+    napply <- function(names, fn) sapply(names, function(x)
+                                         fn(get(x, pos = pos)))
+    names <- ls(pos = pos, pattern = pattern)
+    obj.class <- napply(names, function(x) as.character(class(x))[1])
+    obj.mode <- napply(names, mode)
+    obj.type <- ifelse(is.na(obj.class), obj.mode, obj.class)
+    obj.size <- napply(names, object.size)
+    obj.dim <- t(napply(names, function(x)
+                        as.numeric(dim(x))[1:2]))
+    vec <- is.na(obj.dim)[, 1] & (obj.type != "function")
+    obj.dim[vec, 1] <- napply(names, length)[vec]
+    out <- data.frame(obj.type, obj.size, obj.dim)
+    names(out) <- c("type", "size", "rows", "columns")
+    if (!missing(order.by))
+        out <- out[order(out[[order.by]], decreasing=decreasing), ]
+    if (head)
+        out <- head(out, n)
+    out
+}
+# shorthand
+lsos <- function(..., n=10) {
+    .ls.objects(..., order.by="size", decreasing=TRUE, head=TRUE, n=n)
+}
+
+t_dt <- function(x, key = TRUE){ 
+	#creates a 1-d frequency table for x
+	library(data.table)
+	dt <- data.table(x)
+	if(key) setkey(dt,x)	
+	tab <- dt[, list(freq = .N), by = x] 
+	out <- tab$freq
+	names(out) <- tab$x
+	out 
+}
+
+save_object <- function(x, file_location = NULL){
+	filename = paste0(file_location, deparse(substitute(x)), '.rdata')
 	saveRDS(x, filename)
 	}
 
+load_object <- function(x, file_location = NULL){
+	filename = paste0(file_location, x, '.rdata')
+	readRDS(filename)
+	}
+
 FactorCountIndex <- function(fac, n){
+	if(!is.factor(fac)) fac = factor(fac)
 	#returns a logical vector showing where the count of the levls in fac is greater then n
 	fac %in% levels(fac)[ table(fac) > n]
 }
+
+
+remove_low_factors = function(x, n = 10, replace_with = NA){
+	if(!is.factor(x)) x = factor(x)
+	i_low = !FactorCountIndex (x, n = n)
+    x = unfactor(x)
+	x[i_low] = replace_with
+	x = factor(x)
+	x
+	}
+	
+
+
 
 find_names <- function(x = '.', data){
    names(data)[grep(x, names(data))]
@@ -96,13 +211,13 @@ html_to_txt <- function(string, encoding = 'UTF-8') {
 	 string
 }
 
-
 html_to_text_2 = function(x) {
-	require(rvest)
-	x_html = try(rvest::html(x), silent = TRUE)
+	require(xml2)
+	x = gsub('&nbsp;', ' ', x)
+	x_html = try(xml2::read_html(x, encoding = 'UTF-8'), silent = TRUE)
 	if("try-error" %in% class(x_html)) return(x)
-	x_txt = rvest::html_text(x_html, encoding = 'UTF-8')
-	x <- gsub(intToUtf8(160), ' ', x)
+	x_txt = rvest::html_text(x_html)
+	x_txt <- gsub(intToUtf8(160), ' ', x_txt)
 	x_txt
 	}
 
@@ -215,6 +330,8 @@ CleanNames <- function(df){
 	n <- gsub('\\?','',n)
 	n <- gsub('__','_',n)
 	n <- gsub('-', '_', n)
+    n <- gsub("[^[:alnum:]_]", "",n)
+    n <- gsub("^[0123456789]", "x", n)
 	n
 }
 

@@ -9,8 +9,10 @@ setwd("O:/Tom/R/tomr")
  devtools::use_package('rms', 'Imports')
  devtools::use_package('survival', 'Imports')
  devtools::use_package('plyr', 'Imports')
+ devtools::use_package('data.table', 'Imports')
  
-devtools::load_all()
-
+devtools::load_all("O:/Tom/R/tomr")
+library(arm)
+install.packages('nlme')
 devtools::install("O:/Tom/R/tomr")
 library(tomr)
