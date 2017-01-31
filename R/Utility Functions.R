@@ -1,5 +1,5 @@
 #require(bayesm)
-require(plyr)
+#require(plyr)
 #require(mvtnorm)
 #require(abind)
 ###utility functions######
@@ -213,7 +213,12 @@ html_to_txt <- function(string, encoding = 'UTF-8') {
 
 html_to_text_2 = function(x) {
 	require(xml2)
+  #remove html elements
 	x = gsub('&nbsp;', ' ', x)
+	x = gsub('&lt;', '<', x)
+	x = gsub('&gt;', '>', x)
+	x = gsub('&amp;', '&', x)
+	x = gsub('&pound;', '£', x)
 	x_html = try(xml2::read_html(x, encoding = 'UTF-8'), silent = TRUE)
 	if("try-error" %in% class(x_html)) return(x)
 	x_txt = rvest::html_text(x_html)
